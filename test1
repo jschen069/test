@@ -1,0 +1,10 @@
+    BASE_PROXY="http://p_atlas:proxy%40123@proxy.huawei.com:8080"
+    # BASE_PROXY="http://p_atlas:proxy%40123@proxyhk.huawei.com:8080"
+    # BASE_PROXY="http://p_atlas:proxy%40123@172.18.100.92:8080"
+    export http_proxy=$BASE_PROXY
+    export https_proxy=$BASE_PROXY
+    export HTTP_PROXY=$BASE_PROXY
+    export HTTPS_PROXY=$BASE_PROXY
+    export no_proxy=localhost,127.0.0.1,huawei.com,isource-xa.huawei.com,mirrors.tools.huawei.com,cmc.tools.huawei.com
+    git config --global http.proxy "$BASE_PROXY"
+    git config --global https.proxy "$BASE_PROXY"
