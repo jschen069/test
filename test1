@@ -8,3 +8,7 @@
     export no_proxy=localhost,127.0.0.1,huawei.com,isource-xa.huawei.com,mirrors.tools.huawei.com,cmc.tools.huawei.com
     git config --global http.proxy "$BASE_PROXY"
     git config --global https.proxy "$BASE_PROXY"
+
+git clone https://gitee.com/aisbench/benchmark.git
+cd benchmark/
+pip3 install -e ./ --use-pep517
