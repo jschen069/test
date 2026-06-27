@@ -12,3 +12,12 @@
 git clone https://gitee.com/aisbench/benchmark.git
 cd benchmark/
 pip3 install -e ./ --use-pep517
+
+
+传自定义数据集时，因为实现缺少多模态特定的图像处理逻辑。两者计算量和逻辑不一样。
+
+TTFT：因为需要读取图片，预处理，编码，所以mm_custom_gen比custom_dataset_path 时延高
+TPOT：在decoder时，多模态相当于纯文本多了很多倍token，所以时间长
+e2e： 受TTFT和TPOT影响，所以也不一致
+rqs：mm_custom_gen每个请求包含图片编码，所以计算量大，RQS所以不一样
+outputtoken/ms：与TPOT原因一样
