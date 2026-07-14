@@ -1,0 +1,181 @@
+# Update the vllm-ascend image
+export IMAGE=quay.io/ascend/vllm-ascend:v0.19.1rc1-a3
+export NAME=vllm-ascend-cjs-qwen3.6
+
+# Run the container using the defined variables
+# Note: If you are running bridge network with docker, please expose available ports for multiple nodes communication in advance
+docker run \
+--name $NAME \
+--privileged \
+--net=host \
+--shm-size=32g \
+--ulimit memlock=-1:-1 \
+--device /dev/davinci0 \
+--device /dev/davinci1 \
+--device /dev/davinci2 \
+--device /dev/davinci3 \
+--device /dev/davinci4 \
+--device /dev/davinci5 \
+--device /dev/davinci6 \
+--device /dev/davinci7 \
+--device /dev/davinci8 \
+--device /dev/davinci9 \
+--device /dev/davinci10 \
+--device /dev/davinci11 \
+--device /dev/davinci12 \
+--device /dev/davinci13 \
+--device /dev/davinci14 \
+--device /dev/davinci15 \
+--device /dev/davinci_manager \
+--device /dev/devmm_svm \
+--device /dev/hisi_hdc \
+-v /usr/local/dcmi:/usr/local/dcmi \
+-v /usr/local/Ascend/driver/tools/hccn_tool:/usr/local/Ascend/driver/tools/hccn_tool \
+-v /usr/local/bin/npu-smi:/usr/local/bin/npu-smi \
+-v /usr/local/Ascend/driver/lib64/:/usr/local/Ascend/driver/lib64/ \
+-v /usr/local/Ascend/driver/version.info:/usr/local/Ascend/driver/version.info \
+-v /etc/ascend_install.info:/etc/ascend_install.info \
+-v /mnt/sfs_turbo/.cache:/home/cache \
+-v "$PWD":/workspace \
+-v "/home/weights:/home/weights" \
+-it $IMAGE bash
+
+
+docker exec -itu root ad759aa8cf78 bash 
+
+查看模型的类型是什么
+curl -s http://127.0.0.1:8005/v1/models 2>&1
+
+
+nohup vllm serve /home/weights/models/MiniMax-M2.5 \
+    --tensor-parallel-size 4 \
+    --trust-remote-code \
+    --dtype bfloat16 \
+    --max-model-len 81920 \
+    --no-enable-prefix-caching \
+    --gpu-memory-utilization 0.90 \
+    --enable-expert-parallel \
+    --max-num-seqs 64 \
+    --max-num-batched-tokens 4096 \
+    --compilation-config '{"cudagraph_mode":"FULL_DECODE_ONLY"}' \186
+    --async-scheduling > minimax_A3_202606291605.txt 2>&1 &
+	
+export ASCEND_RT_VISIBLE_DEVICES=8,9,10,11
+vllm serve /home/weights/Qwen3-32B \
+    --tensor-parallel-size 4 \
+	--served-model-name qwen3 \
+    --trust-remote-code \
+    --dtype bfloat16 \
+    --max-model-len 262144 \
+    --gpu-memory-utilization 0.90 \
+    --max-num-seqs 16 \
+    --max-num-batched-tokens 16384 \
+	--port 8005
+	
+export ASCEND_RT_VISIBLE_DEVICES=4,5,6,7	
+vllm serve /home/weights/Qwen3.6-27B/ \
+  --served-model-name qwen3.6 \
+  --tensor-parallel-size 4 \
+  --max-model-len 262144  \
+  --dtype bfloat16 \
+  --gpu-memory-utilization 0.85 \
+  --enable-chunked-prefill \
+  --port 8005 
+
+export ASCEND_RT_VISIBLE_DEVICES=8,9,10,11	
+vllm serve /home/weights/Qwen3.6-27B/ \
+  --served-model-name qwen3.6 \
+  --tensor-parallel-size 4 \
+  --max-model-len 262144 \
+  --dtype bfloat16 \
+  --gpu-memory-utilization 0.85 \
+  --max-num-seqs 4 \
+  --max-num-batched-tokens 16384 \
+  --port 8005
+
+export ASCEND_RT_VISIBLE_DEVICES=4,5,6,7,8,9,10
+
+vllm serve /home/weights/ --port 8801 --max_model_len 26240
+
+vllm serve /home/weights/models/MiniMax-M2.5/ --port 8801 --max_model_len 26240
+
+
+vllm serve /home/weights/models/MiniMax-M2.5 \
+  --tensor-parallel-size 4 \
+  --max-model-len 32768 \
+  --port 8005 \
+  --dtype bfloat16 \
+  --quantization awq \
+  --gpu-memory-utilization 0.90 \
+  --enable-chunked-prefill
+
+  
+modelscope download --dataset allenai/IFBench_test README.md --local_dir ./dir
+
+modelscope download --dataset allenai/IFBench_test --local_dir ./dir/ifbench
+
+evalscope eval \
+ --model /home/weights/Qwen3-8B \
+ --datasets ifbench \
+ --dataset-args '{"ifbench": {"local_path": "./dir/ifbench"}}' \
+ --limit 10
+ 
+ 
+modelscope download --dataset evalscope/AA-LCR --local_dir ./dir/aa_lcr
+ 
+evalscope eval \
+ --model qwen2.5 \
+ --api-url http://127.0.0.1:8801/v1 \
+ --api-key EMPTY \
+ --eval-type openai_api \
+ --datasets gsm8k \
+ --limit 10
+
+
+查看模型的类型是什么
+curl -s http://127.0.0.1:8005/v1/models 2>&1
+
+evalscope eval \
+ --model /home/weights/Qwen3-32B \
+ --api-url http://127.0.0.1:8005/v1 \
+ --api-key EMPTY \
+ --eval-type openai_api \
+ --datasets ifbench \
+ --limit 10
+ 
+evalscope eval \
+ --model qwen3.6 \
+ --api-url http://127.0.0.1:8005/v1 \
+ --api-key EMPTY \
+ --eval-type openai_api \
+ --datasets aa_lcr \
+ --generation-config '{"max_tokens": 512}' \
+ --eval-batch-size 5
+ 
+
+ 
+docker inspect e0d69cf25444| grep -A 10 "IPAddress"
+
+
+VLLM_USE_MODELSCOPE=true vllm serve Qwen/Qwen3.6-27B --port 8000 --tensor-parallel-size 4 --max-model-len 262144 --reasoning-parser qwen3 
+
+
+
+aisbench
+
+pip3 install -e ./ --use-pep517
+
+
+tcpdump -i any port 8006 -w eval_ifbench.pcap 
+
+tcpdump -i any port 8006 -G 600 -w 1 capture.pcap 
+
+
+pip3 install -e ./ --use-pep517 -i https://mirrors.aliyun.com/pypi/simple/
+pip3 install -r requirements/api.txt -i https://mirrors.aliyun.com/pypi/simple/
+pip3 install -r requirements/extra.txt -i https://mirrors.aliyun.com/pypi/simple/
+pip install emoji -i https://mirrors.aliyun.com/pypi/simple/
+pip install syllapy -i https://mirrors.aliyun.com/pypi/simple/
+
+
+tcpdump -i any port 8005 -w aisbench_0709_ifbench1.pcap 
