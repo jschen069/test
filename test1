@@ -24,3 +24,4 @@ outputtoken/ms：与TPOT原因一样
 
 
 https://github.com/nltk/nltk_data/blob/gh-pages/packages/tokenizers/punkt_tab.zip
+if len(str(lines[i + 1])) - len(str(lines[i + 1]).lstrip(' ')) <= len(str(lines[i])) - len(str(lines[i]).lstrip(' ')):
