@@ -31,3 +31,13 @@ if len(str(lines[i + 1])) - len(str(lines[i + 1]).lstrip(' ')) <= len(str(lines[
     --model "your-model" \
     --datasets aa_lcr \
     --dataset-args '{"aa_lcr": {"extra_params": {"text_dir": "/home/chenjiansheng/aa_lcr/lcr/"}}}'
+
+
+  evalscope eval \
+      --model MiniMax-M2.5 \
+      --datasets aa_lcr \
+      --use-cache ./outputs/20260712_224840 \
+      --rerun-review \
+      --judge-strategy llm \
+      --judge-model-args '{"model_id": "qwen3.6", "api_url": "http://127.0.0.1:8005/v1", "api_key": "EMPTY", "generation_config": {"max_tokens": 65536, "temperature": 0.0, "extra_body": {"chat_template_kwargs": {"enable_thinking": false}}}}' \
+      --eval-batch-size 4
