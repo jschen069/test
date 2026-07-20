@@ -41,3 +41,12 @@ if len(str(lines[i + 1])) - len(str(lines[i + 1]).lstrip(' ')) <= len(str(lines[
       --judge-strategy llm \
       --judge-model-args '{"model_id": "qwen3.6", "api_url": "http://127.0.0.1:8005/v1", "api_key": "EMPTY", "generation_config": {"max_tokens": 65536, "temperature": 0.0, "extra_body": {"chat_template_kwargs": {"enable_thinking": false}}}}' \
       --eval-batch-size 4
+
+
+  python -m verl.trainer.main_ppo \
+      --config-name='ppo_trainer' \
+      data.val_files="$HOME/data/geo3k/test.parquet" \
+      actor_rollout_ref.model.path="Qwen/Qwen3-VL-30B-A3B-Instruct" \
+      actor_rollout_ref.rollout.name=vllm \
+      trainer.val_before_train=True \
+      trainer.val_only=True
