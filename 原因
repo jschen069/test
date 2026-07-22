@@ -1,0 +1,66 @@
+C:\code\code\benchmark\ais_bench\benchmark\utils\file\file.py在这个文件中。分析下with open(file_path, 'r+', encoding='utf-8') as f: 添加_lock_file的作用是什么？
+
+  Thought for 18s, read 1 file
+
+_lock_file 的作用：跨进程的"读-改-写"原子化
+
+核心问题
+
+write_status 和 read_and_clear_statuses 都在做同一件事：读取 → 修改 → 写回。
+
+# write_status 的精简逻辑
+with open(file_path, 'r+') as f:
+    _lock_file(f)              # 🔒 获取锁
+    content = f.read()         # ① 读出旧数据
+    existing_data.append(status)  # ② 内存中修改
+    f.seek(0); f.truncate()    # ③ 清空文件
+    json.dump(existing_data, f)   # ④ 写入新数据
+    _unlock_file(f)            # 🔓 释放锁
+
+没有锁会发生什么？→ 数据丢失
+
+在 AISBench 并发场景中，多个子进程同时往同一个 tmp_xxx.json 文件写入状态：
+
+进程 A (task_1)                    进程 B (task_2)
+─────────────────                  ─────────────────
+f.read() → [task_1]
+                                   f.read() → [task_1]     ← 读到的是旧数据！
+修改内存: [task_1, task_a]
+                                   修改内存: [task_1, task_b]
+f.truncate(); 写入 [task_1, task_a]
+                                   f.truncate(); 写入 [task_1, task_b]
+
+最终文件: [task_1, task_b]   ← task_a 被覆盖，永久丢失！
+
+有了 _lock_file 之后
+
+进程 A (task_1)                    进程 B (task_2)
+─────────────────                  ─────────────────
+_lock_file(f) ✅ 获锁
+f.read() → [task_1, task_a]
+                                   _lock_file(f) ⏳ 阻塞等待...
+修改内存: [task_1, task_a, task_2]
+f.truncate(); 写入; flush()
+_unlock_file(f) 🔓 放锁
+                                   ✅ 获锁，f.read() → [task_1, task_a, task_2]
+                                   修改内存: [task_1, task_a, task_2, task_3]
+                                   f.truncate(); 写入; flush()
+                                   _unlock_file(f) 🔓 放锁
+
+最终文件: [task_1, task_a, task_2, task_3]  ← 完整无缺
+
+为什么用 OS 级锁而不是 threading.Lock？
+
+┌──────────────────────────────┬────────────────────────┬───────────────────────┐
+│            锁类型            │        作用范围        │      这里能用？       │
+├──────────────────────────────┼────────────────────────┼───────────────────────┤
+│ threading.Lock()             │ 同一进程内的线程       │ ❌ 不同子进程之间无效 │
+├──────────────────────────────┼────────────────────────┼───────────────────────┤
+│ msvcrt.locking / fcntl.lockf │ 跨进程（操作系统级别） │ ✅                    │
+└──────────────────────────────┴────────────────────────┴───────────────────────┘
+
+这个场景是 multiprocessing.Process 启动的多个子进程写入同一个文件，必须用 OS 级的文件锁。
+
+总结
+
+_lock_file 的本质是把 "读出→修改→写回" 三步操作变成一个跨进程的临界区，保证同一时刻只有一个进程在操作这个文件，防止并发写入导致数据被覆盖丢失。它在 Windows 上用 msvcrt.locking(LK_LOCK)，在 Linux 上用 fcntl.lockf(LOCK_EX)，都是阻塞式的排他锁。
