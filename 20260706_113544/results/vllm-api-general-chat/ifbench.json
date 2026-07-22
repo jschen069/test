@@ -1,0 +1,6 @@
+{
+    "Prompt-level-strict-accuracy": 71.66666666666667,
+    "Inst-level-strict-accuracy": 74.12790697674419,
+    "Prompt-level-loose-accuracy": 77.66666666666666,
+    "Inst-level-loose-accuracy": 79.36046511627907
+}
