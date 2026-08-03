@@ -1,0 +1,52 @@
+1、一共是几卡，batch_size 参数
+2、vllm启动上下文最大len是多少，输出是多少
+3、用的什么模型，思考还是非思考
+4、  python -m verl.trainer.main_ppo \
+      --config-name=ppo_trainer \
+      data.train_files=$HOME/data/geo3k/train.parquet \
+      data.val_files=$HOME/data/geo3k/test.parquet \
+      data.train_batch_size=0 \
+      data.max_prompt_length=1024 \
+      data.max_response_length=2048 \
+      actor_rollout_ref.model.path="Qwen/Qwen3-VL-30B-A3B-Instruct" \
+      actor_rollout_ref.rollout.name=vllm \
+      actor_rollout_ref.hybrid_engine=False \
+      trainer.val_before_train=True \
+      trainer.val_only=True
+
+
+
+
+from ais_bench.benchmark.models import VLLMCustomAPIChat
+from ais_bench.benchmark.utils.postprocess.model_postprocessors import keep_reasoning_content
+
+models = [
+    dict(
+        attr="service",
+        type=VLLMCustomAPIChat,
+        abbr="vllm-api-general-chat",
+        path="",
+        model="",
+        stream=False,
+        request_rate=0,
+        use_timestamp=False,
+        retry=2,
+        api_key="",
+        host_ip="localhost",
+        host_port=8005,
+        url="",
+        max_out_len=32768,
+        batch_size=1,
+        trust_remote_code=False,
+        generation_kwargs=dict(
+            temperature=1.0, 
+            top_p=0.95, 
+            top_k=20, 
+            min_p=0.0, 
+            presence_penalty=1.5, 
+            repetition_penalty=1.0,
+            ignore_eos=False,
+        ),
+        pred_postprocessor=dict(type=keep_reasoning_content),
+    )
+]
