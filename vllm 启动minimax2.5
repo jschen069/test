@@ -1,6 +1,4 @@
-export ASCEND_RT_VISIBLE_DEVICES=8,9,10,11,12,13,14,15
-0,1,2,3,4,5,6,7,
-
+export ASCEND_RT_VISIBLE_DEVICES=0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15        
 export HCCL_OP_EXPANSION_MODE="AIV"
 export HCCL_BUFFSIZE=1024
 export PYTORCH_NPU_ALLOC_CONF=expandable_segments:True
@@ -12,14 +10,14 @@ sysctl kernel.sched_migration_cost_ns=50000
 export LD_PRELOAD=/usr/lib/aarch64-linux-gnu/libjemalloc.so.2:$LD_PRELOAD
 export TASK_QUEUE_ENABLE=1
 
-export VLLM_ASCEND_ENABLE_FUSED_MC2=1
-export VLLM_ASCEND_ENABLE_FLASHCOMM1=1
+export VLLM_ASCEND_BALANCE_SCHEDULING=0
 
-nphub vllm serve /home/weights/MiniMax-M2.5-w8a8-QuaRot \
+
+
+vllm serve /home/weights \
     --served-model-name "MiniMax-M2.5" \
     --port 8006 \
     --trust-remote-code \
-    --quantization ascend \
     --compilation-config '{"cudagraph_mode": "FULL_DECODE_ONLY"}' \
     --async-scheduling \
     --additional-config '{"enable_cpu_binding":true,
@@ -28,28 +26,7 @@ nphub vllm serve /home/weights/MiniMax-M2.5-w8a8-QuaRot \
                           "weight_nz_mode":true}' \
     --enable-expert-parallel \
     --tensor-parallel-size 8 \
-    --data-parallel-size 1 \
-    --max-num-seqs 8 \
-    --max-model-len 131072 \
-    --max-num-batched-tokens 8192 \
-    --gpu-memory-utilization 0.90 \
-	--enable-prefix-caching \
-    --enable-chunked-prefill \
-	--reasoning-parser minimax_m2	> MiniMax-M2.5_A3_202606301605.txt 2>&1 &
-	
-	vllm serve /home/weights/MiniMax-M2.5-w8a8-QuaRot \
-    --served-model-name "MiniMax-M2.5" \
-    --port 8006 \
-    --trust-remote-code \
-    --quantization ascend \
-    --compilation-config '{"cudagraph_mode": "FULL_DECODE_ONLY"}' \
-    --async-scheduling \
-    --additional-config '{"enable_cpu_binding":true,
-                          "enable_fused_mc2":true,
-                          "enable_flashcomm1":true,
-                          "weight_nz_mode":true}' \
-    --enable-expert-parallel \
-    --tensor-parallel-size 8 \
+        --pipeline-parallel-size 1 \
     --data-parallel-size 1 \
     --decode-context-parallel-size 1 \
     --prefill-context-parallel-size 2 \
@@ -57,10 +34,10 @@ nphub vllm serve /home/weights/MiniMax-M2.5-w8a8-QuaRot \
     --max-num-seqs 16 \
     --max-model-len 196608 \
     --max-num-batched-tokens 65536 \
-	--gpu-memory-utilization 0.90 \
-	--enable-prefix-caching \
+        --gpu-memory-utilization 0.90 \
+        --enable-prefix-caching \
     --enable-chunked-prefill \
-	--reasoning-parser minimax_m2
+        --reasoning-parser minimax_m2
 	
 	
 vllm serve /home/weights \
@@ -96,8 +73,8 @@ sysctl -w net.core.somaxconn=65535
 	
 export ASCEND_RT_VISIBLE_DEVICES=8,9,10,11
 
-export ASCEND_RT_VISIBLE_DEVICES=12,13,14,15
-nohup vllm serve /home/weights/Qwen3-32B \
+export ASCEND_RT_VISIBLE_DEVICES=4,5,6,7
+vllm serve /home/chenjiansheng/models/Qwen3.5-35B-A3B/ \
     --tensor-parallel-size 4 \
     --served-model-name qwen3 \
 	--data-parallel-size 1 \
@@ -105,9 +82,23 @@ nohup vllm serve /home/weights/Qwen3-32B \
     --dtype bfloat16 \
     --max-model-len 32768 \
     --gpu-memory-utilization 0.90 \
-    --max-num-seqs 16 \
+    --max-num-seqs 4 \
     --max-num-batched-tokens 16384 \
-        --port 8005 qwen3.6-35b_A3_202606301605.txt 2>&1 &
+    --port 8005
+	
+	
+export ASCEND_RT_VISIBLE_DEVICES=4,5,6,7
+vllm serve /home/weights/Qwen3.6-27B/ \
+    --tensor-parallel-size 4 \
+    --served-model-name qwen3.6 \
+	--data-parallel-size 1 \
+    --trust-remote-code \
+    --dtype bfloat16 \
+    --max-model-len 32768 \
+    --gpu-memory-utilization 0.90 \
+    --max-num-seqs 4 \
+    --max-num-batched-tokens 16384 \
+    --port 8005
 		
 export ASCEND_RT_VISIBLE_DEVICES=8,9,10,11	
 
@@ -115,12 +106,13 @@ export ASCEND_RT_VISIBLE_DEVICES=12,13,14,15
 vllm serve /home/weights/Qwen3.6-27B/ \
   --served-model-name qwen3.6 \
   --tensor-parallel-size 4 \
-  --max-model-len 262144 \
+  --max-model-len 131072 \
   --dtype bfloat16 \
   --gpu-memory-utilization 0.85 \
   --max-num-seqs 4 \
   --max-num-batched-tokens 16384 \
   --port 8005
+  
 	
 	
 eval测评：
@@ -162,20 +154,67 @@ evalscope eval \
  --api-key EMPTY \
  --eval-type openai_api \
  --datasets ifbench \
- --generation-config '{"max_tokens": 16392, "top_p":0.95, "temperature": 1.0, "top_k": 40}' \
- --eval-batch-size 4
+ --generation-config '{"max_tokens": 65536, "top_p":0.95, "temperature": 1.0, "top_k": 40}' \
+ --eval-batch-size 4 
+ --seed 0
+ --limit 1
 
 
-ais_bench --models vllm_api_general_chat --datasets ifbench_0_shot_gen_str --num-prompts 10
+ais_bench --models vllm_api_general_chat --datasets ifbench_0_shot_gen_str --num-prompts 1
 
 
-ais_bench --models vllm_api_general_chat --datasets aa_lcr_llmjudge --mode eval --reuse 20260708_131305
+ais_bench --models vllm_api_general_chat --datasets aa_lcr_llmjudge --mode eval --reuse 20260711_101149
 
 
-ais_bench --models vllm_api_general_chat --datasets ifbench_0_shot_gen_str --mode eval --reuse 20260706_113544
+ais_bench --models vllm_api_general_chat --datasets ifbench_0_shot_gen_str --mode eval --reuse 20260723_183500
 
 
+ais_bench --models vllm_api_general_chat --datasets geometry3k_gen --num-prompts 1
 
+ais_bench --models vllm_api_general_chat --datasets geometry3k_gen --mode eval --reuse 20260801_091841 --num-prompts 1
 
 
 /usr/local/python3.11.14/bin/python3 /usr/local/python3.11.14/bin/vllm serve /home/weights --served-model-name MiniMax-M2.5 --port 8006 --trust-remote-code --compilation-config {"cudagraph_mode": "FULL_DECODE_ONLY"} --async-scheduling --additional-config {"enable_cpu_binding":true,                           "enable_fused_mc2":true,                           "enable_flashcomm1":true,                           "weight_nz_mode":true} --enable-expert-parallel --tensor-parallel-size 8 --pipeline-parallel-size 1 --data-parallel-size 1 --decode-context-parallel-size 1 --prefill-context-parallel-size 2 --cp-kv-cache-interleave-size 128 --max-num-seqs 16 --max-model-len 196608 --max-num-batched-tokens 65536 --gpu-memory-utilization 0.90 --enable-prefix-caching --enable-chunked-prefill --reasoning-parser minimax_m2
+
+
+
+evalscope eval \
+	--model MiniMax-M2.5 \
+	--datasets aa_lcr \
+	--use-cache ./outputs/20260712_224840 \
+	--rerun-review \
+	--judge-model-args '{
+	"model_id": "qwen3.6",
+	"api_url": "http://127.0.0.1:8005/v1",
+	"api_key": "EMPTY",
+	"generation_config": {
+	  "max_tokens": 16392,
+	  "temperature": 0.0,
+	  "extra_body": {"chat_template_kwargs": {"enable_thinking": false}}
+	}
+	}' \
+--eval-batch-size 1
+
+
+  evalscope eval \
+      --model MiniMax-M2.5 \
+      --datasets aa_lcr \
+	  --eval-type openai_api \
+      --use-cache ./outputs/20260712_224840 \
+      --rerun-review \
+      --judge-strategy auto \
+      --judge-model-args '{"model_id": "qwen3.6", "api_url": "http://127.0.0.1:8005/v1", "api_key": "EMPTY", "generation_config": {"max_tokens": 65536, "temperature": 0.0, "extra_body": {"chat_template_kwargs": {"enable_thinking": false}}}}' \
+      --eval-batch-size 4
+	  
+	evalscope eval \
+      --model MiniMax-M2.5 \
+      --datasets ifbench \
+	  --eval-type openai_api \
+      --use-cache ./outputs/20260723_014159 \
+      --rerun-review \
+      --eval-batch-size 4
+	  
+	  
+ais_bench --models vllm_api_stream_chat --datasets demo_gsm8k_gen_4_shot_cot_chat_prompt --summarizer default_perf --mode perf
+
+gsm8k_gen_0_shot_cot_str_perf
