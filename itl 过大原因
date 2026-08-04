@@ -1,0 +1,10 @@
+vLLM benchmark：/v1/completions
+EOS 后 vllm engine 继续 decode。 每一个token都会发送 SSE，客户端会计算上一次SSE的时间差。
+所以itl和tpot的量级一致
+
+/v1/chat/completions + K3 parser:
+eos后生成的token，vllm没有发送SSE event。只有到最后达到max_token，才发出sse，最后累计成一个巨大时间gap
+
+所以使用vllm_api_stream_chat启动任务会出现这样的现象
+
+使用vllm_api_general_stream，底层走的/v1/completions，则没有此现象。
