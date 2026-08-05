@@ -5,6 +5,8 @@ ray stop --force
 source /home/l00937981/cann_160/ascend-toolkit/set_env.sh
 source /home/l00937981/cann_160/nnal/atb/set_env.sh
 
+find / -name "set_env.sh" -path "*/ascend-toolkit/*"
+
 # source /home/cann/8.5.0/ascend-toolkit/set_env.sh
 # source /home/cann/8.5.0/nnal/atb/set_env.sh
 
