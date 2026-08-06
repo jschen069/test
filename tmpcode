@@ -1,15 +1,1 @@
-        # dump generations as JSONL (always save)
-        val_data_dir = self.config.trainer.get("validation_data_dir", None) or os.path.join(
-            self.config.trainer.default_local_dir, "val_predictions"
-        )
-        self._dump_generations(
-            inputs=sample_inputs,
-            outputs=sample_outputs,
-            gts=sample_gts,
-            scores=sample_scores,
-            reward_extra_infos_dict=reward_extra_infos_dict,
-            dump_path=val_data_dir,
-        )
-
-
-trainer.validation_data_dir=/data/geo3k_results
+vllm serve /home/chenjiansheng/models/Qwen3.5-35B-A3B/     --tensor-parallel-size 4     --served-model-name qwen3.5        --data-parallel-size 1     --trust-remote-code     --dtype bfloat16     --max-model-len 3072     --gpu-memory-utilization 0.90     --max-num-seqs 4     --max-num-batched-tokens 4096     --port 8005  --allowed-local-media-path /workspace
