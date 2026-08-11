@@ -121,11 +121,7 @@ Geometry3KDataset.load()
 ```
 _resolve_parquet_path(path, split)
     │
-    └── 1. path 是相对路径 / 空
-        ├── 3a. 尝试 get_data_path(path, local_mode=True)
-        └── 3b. 回退到 source-relative: ../../datasets/geometry3k/
-            └── 优先查找 data/ 子目录下的 parquet
-            └── 再查找目录本身的 parquet
+    └──  尝试 get_data_path(path, local_mode=True)
 ```
 
 设计要点：
@@ -464,16 +460,11 @@ LOG_LEVEL=DEBUG python -m ais_bench --datasets geometry3k_gen --models vllm_api_
 评测完成后，在 `outputs/` 目录下生成预测文件和评分结果。`score()` 返回结构：
 
 ```python
-{
-    "combined_score": 85.5,  # 综合分（百分制）
-    "details": [
-        {"pred": "...", "answer": "30", "extracted_answer": "30",
-         "accuracy": 1.0, "format_score": 1.0, "combined_score": 1.0},
-        {"pred": "...", "answer": "45", "extracted_answer": "90",
-         "accuracy": 0.0, "format_score": 1.0, "combined_score": 0.0},
-        ...
-    ]
-}
+dataset     version    metric          mode      vllm-api-general-chat
+----------  ---------  --------------  ------  -----------------------
+geometry3k  e3713f     accuracy        gen                        0.00
+geometry3k  e3713f     format_score    gen                        0.00
+geometry3k  e3713f     combined_score  gen                        0.00
 ```
 
 ---
