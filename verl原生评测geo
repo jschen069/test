@@ -1,0 +1,148 @@
+verl 原生命令
+ray stop --force
+
+# 容器内部CANN 无需修改
+source /home/l00937981/cann_160/ascend-toolkit/set_env.sh
+source /home/l00937981/cann_160/nnal/atb/set_env.sh
+
+find / -name "set_env.sh" -path "*/ascend-toolkit/*"
+/home/dds/Ascend/ascend-toolkit/set_env.sh
+# source /home/cann/8.5.0/ascend-toolkit/set_env.sh
+# source /home/cann/8.5.0/nnal/atb/set_env.sh
+
+set -x
+ENGINE=${1:-vllm}
+export CUDA_DEVICE_MAX_CONNECTIONS=1 # For megatron communication/computation overlapping
+export VLLM_ALLREDUCE_USE_SYMM_MEM=0 # for vllm0.11.0 with TP
+export HYDRA_FULL_ERROR=1
+export VLLM_ASCEND_ENABLE_NZ=0
+
+data_path=/home/p00943480/CODE/verl-veomni/verl/geometry3k
+model_path=/home/data/Qwen3-VL-30B-A3B-Instruct
+
+GEN_TP=${GEN_TP:-4}
+CP=${CP:-1}
+TP=${TP:-4}
+PP=${PP:-1}
+EP=${EP:-16}
+ETP=${ETP:-1}
+
+train_path=$HOME/data/geo3k/train.parquet
+test_path=$HOME/data/geo3k/test.parquet
+
+logfile=$(date +%Y%m%d)_$(date +%H%M%S)
+mkdir -p logs
+python3 -m verl.trainer.main_ppo --config-path=config \
+    --config-name='ppo_megatron_trainer.yaml'\
+    algorithm.adv_estimator=grpo \
+    data.train_files=$data_path/train.parquet \
+    data.val_files=$data_path/test.parquet \
+    data.train_batch_size=64 \
+    data.max_prompt_length=1024 \
+    data.max_response_length=2048 \
+    data.filter_overlong_prompts=True \
+    data.truncation='error' \
+    data.shuffle=False \
+    actor_rollout_ref.model.path=$model_path \
+    actor_rollout_ref.actor.optim.lr=1e-6 \
+    actor_rollout_ref.actor.ppo_mini_batch_size=32 \
+    actor_rollout_ref.actor.ppo_micro_batch_size_per_gpu=1 \
+    actor_rollout_ref.actor.megatron.pipeline_model_parallel_size=$PP \
+    actor_rollout_ref.actor.megatron.tensor_model_parallel_size=$TP \
+    actor_rollout_ref.actor.megatron.context_parallel_size=$CP \
+    actor_rollout_ref.actor.megatron.expert_model_parallel_size=$EP \
+    actor_rollout_ref.actor.megatron.expert_tensor_parallel_size=$ETP \
+    actor_rollout_ref.actor.use_kl_loss=True \
+    actor_rollout_ref.actor.kl_loss_coef=0.01 \
+    actor_rollout_ref.actor.kl_loss_type=low_var_kl \
+    actor_rollout_ref.actor.entropy_coeff=0 \
+    actor_rollout_ref.rollout.log_prob_micro_batch_size_per_gpu=1 \
+    actor_rollout_ref.rollout.tensor_model_parallel_size=$GEN_TP \
+    actor_rollout_ref.actor.use_dynamic_bsz=True \
+    actor_rollout_ref.rollout.calculate_log_probs=True \
+    actor_rollout_ref.actor.ppo_max_token_len_per_gpu=4096 \
+    actor_rollout_ref.ref.log_prob_use_dynamic_bsz=True \
+    actor_rollout_ref.ref.log_prob_max_token_len_per_gpu=4096 \
+    actor_rollout_ref.rollout.log_prob_use_dynamic_bsz=True \
+    actor_rollout_ref.rollout.log_prob_max_token_len_per_gpu=4096 \
+    actor_rollout_ref.rollout.name=$ENGINE \
+    actor_rollout_ref.rollout.gpu_memory_utilization=0.5 \
+    actor_rollout_ref.rollout.n=5 \
+    actor_rollout_ref.ref.log_prob_micro_batch_size_per_gpu=1 \
+    actor_rollout_ref.actor.megatron.use_mbridge=True \
+    actor_rollout_ref.actor.megatron.param_offload=True \
+    actor_rollout_ref.actor.megatron.optimizer_offload=True \
+    actor_rollout_ref.actor.megatron.grad_offload=True \
+    actor_rollout_ref.ref.megatron.param_offload=True \
+    +actor_rollout_ref.actor.optim.override_optimizer_config.optimizer_offload_fraction=1 \
+    +actor_rollout_ref.actor.optim.override_optimizer_config.overlap_cpu_optimizer_d2h_h2d=True \
+    +actor_rollout_ref.actor.optim.override_optimizer_config.use_precision_aware_optimizer=True \
+    +actor_rollout_ref.actor.optim.override_optimizer_config.optimizer_cpu_offload=True \
+    +actor_rollout_ref.actor.megatron.override_transformer_config.moe_router_dtype=fp32 \
+    +actor_rollout_ref.actor.megatron.override_transformer_config.recompute_method=uniform \
+    +actor_rollout_ref.actor.megatron.override_transformer_config.recompute_granularity=full \
+    +actor_rollout_ref.actor.megatron.override_transformer_config.recompute_num_layers=1 \
+    +actor_rollout_ref.actor.megatron.override_transformer_config.gradient_accumulation_fusion=False \
+    +actor_rollout_ref.actor.megatron.override_transformer_config.moe_permute_fusion=True \
+    +actor_rollout_ref.actor.megatron.override_transformer_config.moe_aux_loss_coeff=0.01 \
+    +actor_rollout_ref.actor.megatron.override_transformer_config.moe_z_loss_coeff=0.001 \
+    +actor_rollout_ref.actor.megatron.override_transformer_config.use_flash_attn=True \
+    +actor_rollout_ref.actor.megatron.override_transformer_config.fp8=False \
+    algorithm.use_kl_in_reward=False \
+    trainer.critic_warmup=0 \
+    trainer.logger='["console"]' \
+    trainer.project_name='verl_grpo_example_geo3k' \
+    trainer.experiment_name='qwen3_vl_30b_megatron' \
+    trainer.n_gpus_per_node=16 \
+    trainer.device=npu \
+    trainer.nnodes=1 \
+    trainer.val_before_train=False \
+    trainer.resume_mode=disable \
+    trainer.default_local_dir='/home/l00937981/qwen3vl_verl_0130/lh_scripts' \
+    trainer.save_freq=60 \
+    trainer.test_freq=5 \
+    trainer.total_epochs=15 $@ 2>&1 | tee train_verl_qwen3_vl_30b_npu_v4.log 
+
+
+def seed_all(seed=42, mode=True, is_gpu=False):
+    print("======================seed_all=============================")
+    import random
+    import numpy as np
+    import torch
+    random.seed(seed)
+    os.environ['PYTHONHASHSEED'] = str(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    torch.use_deterministic_algorithms(mode)
+    if is_gpu:
+        torch.cuda.manual_seed_all(seed)
+        torch.cuda.manual_seed(seed)
+        torch.backends.cudnn.deterministic = True
+        torch.backends.cudnn.enable = False
+        torch.backends.cudnn.benchmark = False
+    else:
+        import torch_npu
+        torch_npu.npu.manual_seed_all(seed)
+        torch_npu.npu.manual_seed(seed)
+
+if __name__ == "__main__":
+    import os
+    import torch
+    seed_all(mode=os.environ.get('DETERM_COMP', "true") == "true")
+    main() 
+
+
+
+        acc = self.get_validation_acc(sample_scores)
+        return self._val_metrics_update(data_sources, sample_uids, reward_extra_infos_dict, sample_turns)
+
+    def get_validation_acc(self, sample_scores):
+        n_correct = sum(sample_scores)
+        n_total = len(sample_scores)
+        acc = n_correct / n_total
+        print(f"Accuracy: {n_correct}/{n_total} = {acc * 100:.2f}%.")
+        return acc
+
+
+评测对比加载保存的HF权重，同时开启val_only=True。
+verl/examples/grpo_trainer/run_qwen3-VL-30b_megatron_validate.sh

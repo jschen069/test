@@ -1,0 +1,1 @@
+vllm serve /home/chenjiansheng/models/Qwen3.5-35B-A3B/     --tensor-parallel-size 4     --served-model-name qwen3.5        --data-parallel-size 1     --trust-remote-code     --dtype bfloat16     --max-model-len 3072     --gpu-memory-utilization 0.90     --max-num-seqs 4     --max-num-batched-tokens 4096     --port 8005  --allowed-local-media-path /workspace
