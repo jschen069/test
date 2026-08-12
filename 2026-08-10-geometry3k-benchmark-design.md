@@ -461,20 +461,11 @@ LOG_LEVEL=DEBUG python -m ais_bench --datasets geometry3k_gen --models vllm_api_
 
 ### 3.7 输出结果
 
-评测完成后，在 `outputs/` 目录下生成预测文件和评分结果。`score()` 返回结构：
+评测完成后，在 `outputs/` 目录下生成预测文件和评分结果。返回结果展示：
 
-```python
-{
-    "combined_score": 85.5,  # 综合分（百分制）
-    "details": [
-        {"pred": "...", "answer": "30", "extracted_answer": "30",
-         "accuracy": 1.0, "format_score": 1.0, "combined_score": 1.0},
-        {"pred": "...", "answer": "45", "extracted_answer": "90",
-         "accuracy": 0.0, "format_score": 1.0, "combined_score": 0.0},
-        ...
-    ]
-}
-```
+| dataset | version | metric | mode | vllm-api-general-chat |
+|----- | ----- | ----- | ----- | -----|
+| geometry3k | e3713f | accuracy | gen | 36.00 |
 
 ---
 
