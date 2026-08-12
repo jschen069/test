@@ -121,11 +121,7 @@ Geometry3KDataset.load()
 ```
 _resolve_parquet_path(path, split)
     │
-    └── 1. path 是相对路径 / 空
-        ├── 3a. 尝试 get_data_path(path, local_mode=True)
-        └── 3b. 回退到 source-relative: ../../datasets/geometry3k/
-            └── 优先查找 data/ 子目录下的 parquet
-            └── 再查找目录本身的 parquet
+    └──  尝试 get_data_path(path, local_mode=True)
 ```
 
 设计要点：
@@ -423,23 +419,7 @@ geometry3k_datasets = [dict(
 )]
 ```
 
-### 3.4 调整评分权重
-
-通过配置修改 `format_weight`：
-
-```python
-eval_cfg = dict(
-    evaluator=dict(
-        type=Geometry3KEvaluator,
-        format_weight=0.1,   # 格式分占 10%
-    )
-)
-```
-
-- `format_weight=0.0`（默认）：综合分 = 答案正确率，适合纯能力评测
-- `format_weight=0.1`：综合分 = 0.9×正确率 + 0.1×格式分，适合需要关注格式合规的场景
-
-### 3.5 切换后处理器
+### 3.4 切换后处理器
 
 不同的后处理器影响评分器能看到的输出内容：
 
@@ -451,15 +431,7 @@ pred_postprocessor=dict(type=keep_reasoning_content)
 pred_postprocessor=dict(type=extract_non_reasoning_content)
 ```
 
-### 3.6 开启调试日志
-
-默认（INFO 级别）下模块零日志输出。需要排查问题时，设置环境变量开启 DEBUG：
-
-```bash
-LOG_LEVEL=DEBUG python -m ais_bench --datasets geometry3k_gen --models vllm_api_general_chat
-```
-
-### 3.7 输出结果
+### 3.5 输出结果
 
 评测完成后，在 `outputs/` 目录下生成预测文件和评分结果。返回结果展示：
 
