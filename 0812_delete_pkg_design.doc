@@ -1,0 +1,131 @@
+﻿<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>需求设计文档：删除冗余三方依赖</title>
+<!--[if gte mso 9]><xml><w:WordDocument><w:View>Print</w:View><w:Zoom>100</w:Zoom></w:WordDocument></xml><![endif]-->
+<style>
+body { font-family: "Microsoft YaHei", "SimSun", sans-serif; font-size: 11pt; line-height: 1.6; color: #222; }
+h1 { font-size: 20pt; color: #1a1a1a; border-bottom: 2px solid #2f6feb; padding-bottom: 6px; }
+h2 { font-size: 15pt; color: #2f6feb; margin-top: 18px; }
+h3 { font-size: 12.5pt; color: #333; }
+table { border-collapse: collapse; width: 100%; margin: 8px 0; }
+th, td { border: 1px solid #999; padding: 5px 8px; font-size: 10pt; vertical-align: top; }
+th { background: #eef3fd; text-align: left; }
+code { background: #f4f4f4; padding: 1px 4px; border-radius: 3px; font-family: Consolas, monospace; font-size: 9.5pt; }
+.meta td:first-child { width: 18%; background: #f7f9fc; font-weight: bold; }
+</style>
+</head>
+<body>
+
+<h1>需求设计文档：删除冗余三方依赖</h1>
+
+<table class="meta">
+<tr><td>影响文件</td><td><code>requirements/runtime.txt</code></td></tr>
+<tr><td>文档日期</td><td>2026-08-18</td></tr>
+</table>
+
+<h2>一、背景</h2>
+
+<h3>1.1 问题来源</h3>
+<p><code>requirements/runtime.txt</code> 声明了项目全部运行时依赖。其中存在一批「声明了、但全仓库没有任何代码引用」的死依赖——它们从项目初始化阶段（继承自上游 OpenCompass 工程）带入，既不被主代码 import，也不被测试代码 import，更不是任何保留包的运行时传递依赖。</p>
+
+<p>对运行时依赖给出的结论如下：</p>
+<table>
+<tr><th>分类</th><th>说明</th></tr>
+<tr><td>实际被使用的依赖</td><td>主代码或测试存在真实引用，建议保留</td></tr>
+<tr><td>被测试 mock 暗示可能被下游间接使用</td><td><code>accelerate</code>、<code>gradio-client</code>、<code>httpx</code>、<code>immutabledict</code>，建议保留</td></tr>
+<tr><td>业务上建议保留</td><td><code>seaborn</code>（CIBench 数据集需实际执行模型生成的 seaborn 绘图代码）</td></tr>
+<tr><td>可安全移除</td><td><code>h5py</code>、<code>json5</code>、<code>prettytable</code>、<code>rank_bm25</code>、<code>retrying</code>、<code>timeout_decorator</code>、<code>typer</code></td></tr>
+</table>
+
+<h3>1.2 要解决的问题</h3>
+<p>上述 7 个死依赖的存在带来如下问题：</p>
+<ol>
+<li>增加安装包体积、拉长安装时间；</li>
+<li>引入与项目无关的版本解析与潜在依赖冲突；</li>
+<li>误导使用者对工具真实依赖面的判断。</li>
+</ol>
+<p>因此将这 7 个死依赖从 <code>requirements/runtime.txt</code> 中删除。</p>
+
+<h2>二、设计</h2>
+
+<h3>2.1 消减判定原则</h3>
+<p>删除一个依赖，须<b>同时满足</b>以下三条：</p>
+<ol>
+<li><b>主代码无引用</b>：<code>ais_bench/**</code> 中不存在 <code>import X</code> / <code>from X import ...</code>；</li>
+<li><b>测试代码无引用</b>：<code>tests/**</code> 中不存在对 X 的真实引用（仅在 <code>conftest.py</code> 的 mock 注册列表中出现不视为「使用」）；</li>
+<li><b>非传递依赖</b>：X 不是任何被保留包的运行时依赖。</li>
+</ol>
+
+<h3>2.2 删除清单（7 个）</h3>
+<table>
+<tr><th>依赖</th><th>原用途</th><th>删除原因</th></tr>
+<tr><td><code>h5py</code></td><td>HDF5 数据读取</td><td>主代码/测试均无引用，且无保留包依赖</td></tr>
+<tr><td><code>json5</code></td><td>JSON5 配置解析</td><td>配置解析已改用 <code>yaml</code>/标准 JSON</td></tr>
+<tr><td><code>prettytable</code></td><td>表格展示</td><td>已被 <code>tabulate</code> 替代</td></tr>
+<tr><td><code>rank_bm25==0.2.2</code></td><td>BM25 检索</td><td>检索类评测未保留</td></tr>
+<tr><td><code>retrying</code></td><td>重试机制</td><td>重试逻辑已自实现，或由 <code>func_timeout</code> 承担</td></tr>
+<tr><td><code>timeout_decorator</code></td><td>超时装饰器</td><td>同上</td></tr>
+<tr><td><code>typer</code></td><td>CLI 框架</td><td>CLI 已改用 <code>argparse</code></td></tr>
+</table>
+
+<h3>2.3 保留清单及原因</h3>
+<p>删除后保留的关键依赖（重点说明为何这 4 个「无直接 import」的包不删）：</p>
+<table>
+<tr><th>依赖</th><th>直接 import</th><th>实际使用者</th><th>保留原因</th></tr>
+<tr><td><code>accelerate&gt;=0.19.0</code></td><td>无</td><td><code>transformers</code>（<code>device_map='auto'</code>）、<code>datasets</code>/<code>trl</code>/<code>peft</code></td><td>本地 HuggingFace 模型加载依赖 <code>device_map</code>，缺失 <code>accelerate</code> 会直接报错</td></tr>
+<tr><td><code>httpx</code></td><td>无</td><td><code>openai</code> SDK（OpenAI 兼容 API 调用）</td><td>OpenAI 客户端底层即 <code>httpx</code>；BFCL 依赖清单另列 <code>httpx-sse==0.4.0</code></td></tr>
+<tr><td><code>immutabledict</code></td><td>无</td><td><code>mmengine-lite</code> 的 <code>ConfigDict</code></td><td><code>from mmengine.config import ConfigDict</code> 遍布 50+ 文件，<code>mmengine-lite</code> 不保证自带 <code>immutabledict</code></td></tr>
+<tr><td><code>gradio-client</code></td><td>无</td><td><code>bfcl_eval</code> / HuggingFace Spaces 类推理</td><td>BFCL 评测经 Gradio 客户端调用部分模型</td></tr>
+<tr><td><code>seaborn</code></td><td>无</td><td>CIBench 数据集</td><td>业务保留：需执行模型生成的 seaborn 绘图代码</td></tr>
+</table>
+
+<h3>2.4 代码变更</h3>
+<ol>
+<li><b><code>requirements/runtime.txt</code></b>
+<ul>
+<li>删除 7 行：<code>h5py</code>、<code>json5</code>、<code>prettytable</code>、<code>rank_bm25==0.2.2</code>、<code>retrying</code>、<code>timeout_decorator</code>、<code>typer</code>；</li>
+<li>其余依赖（含上述保留项）保持不变。</li>
+</ul>
+</li>
+<li><b><code>ais_bench/benchmark/datasets/ifbench/ifbench.py</code>（PR 附带改动）</b>
+<ul>
+<li>IFBench 严格模式判定函数 <code>test_instruction_following_strict</code> 的调试日志中补充 <code>result.follow_instruction_list</code> 字段输出。</li>
+</ul>
+</li>
+</ol>
+
+<h2>三、验证</h2>
+
+<h3>3.1 验证方式</h3>
+<p>本次为「依赖删减」变更，不涉及业务逻辑，验证以<b>不破坏现有功能</b>为目标，采用两级验证：</p>
+<ol>
+<li><b>单元测试（UT）</b>
+<ul>
+<li>运行 <code>tests/UT/</code> 全量单测，确认删除 7 个依赖后无 <code>ModuleNotFoundError</code>、无回归；</li>
+<li>重点观察 <code>tests/UT/tasks/oneig</code>、<code>tests/UT/tasks/swebp_pro</code>（其 <code>conftest.py</code> 对依赖做了 mock，可佐证被删项未被主代码真实使用）。</li>
+</ul>
+</li>
+<li><b>冒烟测试（Smoke Test）</b>
+<ul>
+<li>执行 <code>smoke_tests/</code> 下基础冒烟用例，验证核心链路（数据集加载、模型加载、评测跑通）在精简依赖环境下正常运行。</li>
+</ul>
+</li>
+</ol>
+
+<h3>3.2 验证标准</h3>
+<table>
+<tr><th>验证项</th><th>通过标准</th></tr>
+<tr><td>单元测试</td><td>全量 UT 通过，无新增失败用例</td></tr>
+<tr><td>冒烟测试</td><td>冒烟用例全部通过，无依赖缺失报错</td></tr>
+<tr><td>安装验证</td><td><code>pip install -e .</code> 成功，安装过程中不尝试拉取已删除的 7 个包</td></tr>
+</table>
+
+<h3>3.3 风险与回滚</h3>
+<ul>
+<li><b>风险</b>：极低。7 个被删包均无代码引用且非传递依赖，删除不影响任何运行链路。</li>
+<li><b>回滚</b>：如需恢复，在 <code>requirements/runtime.txt</code> 重新加回对应行即可。</li>
+</ul>
+
+</body>
+</html>
