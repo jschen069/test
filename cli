@@ -1,125 +1,91 @@
 root@ascend910c-05:/workspace/benchmark# ais-bench-prefix-cache run --scenario ./scenario.json
-[W921 03:39:54.908205170 FunctionLoader.cpp:48] Warning: LD_PRELOAD detected, FunctionLoader prefers RTLD_DEFAULT for symbol resolution. (function operator())
-[W921 03:40:16.342656410 FunctionLoader.cpp:48] Warning: LD_PRELOAD detected, FunctionLoader prefers RTLD_DEFAULT for symbol resolution. (function operator())
-[2026-09-21 03:40:31,856] [ais_bench] [INFO] Current exp folder: /workspace/benchmark/outputs/default/20260921_034013
-[2026-09-21 03:40:31,921] [ais_bench] [INFO] Starting inference tasks...
-[2026-09-21 03:40:31,923] [ais_bench] [INFO] Partitioned into 1 tasks.
-[2026-09-21 03:40:31,923] [ais_bench] [INFO] Merging datasets with the same model and inferencer...
-[2026-09-21 03:40:31,965] [ais_bench] [INFO] Launch TasksMonitor, PID: 8139, Refresh interval: 0.5, Run in background: False
-[2026-09-21 03:40:31,966] [ais_bench] [INFO] Start launch task state board ...
-+----------------------------------------------------------------------------------+-----------+-----------------------------------------------------+-------------+----------+-------------------------------------------------------------------------------------------------+------------------------------------------------------+
-| Task Name                                                                        |   Process | Progress                                            | Time Cost   | Status   | Log Path                                                                                        | Extend Parameters                                    |
-+==================================================================================+===========+=====================================================+=============+==========+=================================================================================================+======================================================+
-| gsm8k-prefix-cache-01_20260921_033452-vllm/gsm8k-prefix-cache-01_20260921_033452 |      8143 | [##############################] 100/100 [0.5 it/s] | 0:02:08     | finish   | logs/infer/gsm8k-prefix-cache-01_20260921_033452-vllm/gsm8k-prefix-cache-01_20260921_033452.out | {'POST': 100, 'RECV': 100, 'FINISH': 100, 'FAIL': 0} |
-+----------------------------------------------------------------------------------+-----------+-----------------------------------------------------+-------------+----------+-------------------------------------------------------------------------------------------------+------------------------------------------------------+
-[2026-09-21 03:43:13,440] [ais_bench] [INFO] Inference tasks completed.
-[2026-09-21 03:43:13,449] [ais_bench] [INFO] Summarizing performance results...
-Calculating performance details: 100%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 100/100 [00:07<00:00, 13.34it/s]
+[W921 07:10:15.680963670 FunctionLoader.cpp:48] Warning: LD_PRELOAD detected, FunctionLoader prefers RTLD_DEFAULT for symbol resolution. (function operator())
+Generate prompts [##############################] 10/10 100%
+[W921 07:10:37.809664090 FunctionLoader.cpp:48] Warning: LD_PRELOAD detected, FunctionLoader prefers RTLD_DEFAULT for symbol resolution. (function operator())
+[2026-09-21 07:10:50,699] [ais_bench] [INFO] Current exp folder: /workspace/benchmark/outputs/default/20260921_071035
+[2026-09-21 07:10:50,747] [ais_bench] [INFO] Starting inference tasks...
+[2026-09-21 07:10:50,748] [ais_bench] [INFO] Partitioned into 1 tasks.
+[2026-09-21 07:10:50,748] [ais_bench] [INFO] Merging datasets with the same model and inferencer...
+[2026-09-21 07:10:50,788] [ais_bench] [INFO] Launch TasksMonitor, PID: 9536, Refresh interval: 0.5, Run in background: False
+[2026-09-21 07:10:50,788] [ais_bench] [INFO] Start launch task state board ...
++----------------------------------------------------------------------------------+-----------+---------------------------------------------------+-------------+----------+-------------------------------------------------------------------------------------------------+---------------------------------------------------+
+| Task Name                                                                        |   Process | Progress                                          | Time Cost   | Status   | Log Path                                                                                        | Extend Parameters                                 |
++==================================================================================+===========+===================================================+=============+==========+=================================================================================================+===================================================+
+| gsm8k-prefix-cache-01_20260921_071009-vllm/gsm8k-prefix-cache-01_20260921_071009 |      9540 | [##############################] 10/10 [0.3 it/s] | 0:00:31     | finish   | logs/infer/gsm8k-prefix-cache-01_20260921_071009-vllm/gsm8k-prefix-cache-01_20260921_071009.out | {'POST': 10, 'RECV': 10, 'FINISH': 10, 'FAIL': 0} |
++----------------------------------------------------------------------------------+-----------+---------------------------------------------------+-------------+----------+-------------------------------------------------------------------------------------------------+---------------------------------------------------+
+[2026-09-21 07:11:42,676] [ais_bench] [INFO] Inference tasks completed.
+[2026-09-21 07:11:42,679] [ais_bench] [INFO] Summarizing performance results...
+Calculating performance details: 100%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 10/10 [00:01<00:00,  5.83it/s]
 /usr/local/python3.12.13/lib/python3.12/site-packages/plotly/offline/offline.py:150: UserWarning: 
 Unrecognized config options supplied: ['showLink']
   warnings.warn(
-[2026-09-21 03:43:29,792] [ais_bench] [INFO] Request timeline and concurrency chart saved to /workspace/benchmark/outputs/default/20260921_034013/performances/gsm8k-prefix-cache-01_20260921_033452-vllm/gsm8k-prefix-cache-01_20260921_033452_plot.html
-[2026-09-21 03:43:29,794] [ais_bench] [INFO] The gsm8k-prefix-cache-01_20260921_033452_plot has been saved in /workspace/benchmark/outputs/default/20260921_034013/performances/gsm8k-prefix-cache-01_20260921_033452-vllm/gsm8k-prefix-cache-01_20260921_033452_plot.html
-[2026-09-21 03:43:29,824] [ais_bench] [INFO] Converting performance results for stage...
-[2026-09-21 03:43:29,827] [ais_bench] [INFO] Performance results conversion completed!
-[2026-09-21 03:43:29,827] [ais_bench] [INFO] Starting metrics calculation...
-[2026-09-21 03:43:29,866] [ais_bench] [INFO] Starting common metrics calculation...
-[2026-09-21 03:43:29,868] [ais_bench] [INFO] Adding units to metrics...
-[2026-09-21 03:43:29,869] [ais_bench] [INFO] Performance data calculation completed!
-[2026-09-21 03:43:29,875] [ais_bench] [INFO] Performance Results of task [gsm8k-prefix-cache-01_20260921_033452-vllm/gsm8k-prefix-cache-01_20260921_033452]: 
-╒══════════════════════════╤═════════╤═══════════════════╤═══════════════════╤════════════════════╤═════════════════╤═══════════════════╤════════════════════╤════════════════════╤═════╕
-│ Performance Parameters   │ Stage   │ Average           │ Min               │ Max                │ Median          │ P75               │ P90                │ P99                │  N  │
-╞══════════════════════════╪═════════╪═══════════════════╪═══════════════════╪════════════════════╪═════════════════╪═══════════════════╪════════════════════╪════════════════════╪═════╡
-│ E2EL                     │ total   │ 1251.2 ms         │ 542.6 ms          │ 2086.9 ms          │ 930.3 ms        │ 1763.0 ms         │ 1818.5 ms          │ 1977.8 ms          │ 100 │
-├──────────────────────────┼─────────┼───────────────────┼───────────────────┼────────────────────┼─────────────────┼───────────────────┼────────────────────┼────────────────────┼─────┤
-│ TTFT                     │ total   │ 278.4 ms          │ 92.2 ms           │ 651.1 ms           │ 198.7 ms        │ 404.8 ms          │ 416.1 ms           │ 475.9 ms           │ 100 │
-├──────────────────────────┼─────────┼───────────────────┼───────────────────┼────────────────────┼─────────────────┼───────────────────┼────────────────────┼────────────────────┼─────┤
-│ TPOT                     │ total   │ 31.4 ms           │ 14.5 ms           │ 50.7 ms            │ 23.6 ms         │ 44.2 ms           │ 45.2 ms            │ 48.7 ms            │ 100 │
-├──────────────────────────┼─────────┼───────────────────┼───────────────────┼────────────────────┼─────────────────┼───────────────────┼────────────────────┼────────────────────┼─────┤
-│ ITL                      │ total   │ 30.7 ms           │ 0.0 ms            │ 118.0 ms           │ 24.0 ms         │ 44.6 ms           │ 46.8 ms            │ 59.6 ms            │ 100 │
-├──────────────────────────┼─────────┼───────────────────┼───────────────────┼────────────────────┼─────────────────┼───────────────────┼────────────────────┼────────────────────┼─────┤
-│ InputTokens              │ total   │ 1027.46           │ 1027.0            │ 1030.0             │ 1027.0          │ 1027.0            │ 1030.0             │ 1030.0             │ 100 │
-├──────────────────────────┼─────────┼───────────────────┼───────────────────┼────────────────────┼─────────────────┼───────────────────┼────────────────────┼────────────────────┼─────┤
-│ OutputTokens             │ total   │ 32.0              │ 32.0              │ 32.0               │ 32.0            │ 32.0              │ 32.0               │ 32.0               │ 100 │
-├──────────────────────────┼─────────┼───────────────────┼───────────────────┼────────────────────┼─────────────────┼───────────────────┼────────────────────┼────────────────────┼─────┤
-│ OutputTokenThroughput    │ total   │ 31.3252 token/s   │ 15.3335 token/s   │ 58.9772 token/s    │ 34.3983 token/s │ 38.3658 token/s   │ 58.084 token/s     │ 58.9078 token/s    │ 100 │
-├──────────────────────────┼─────────┼───────────────────┼───────────────────┼────────────────────┼─────────────────┼───────────────────┼────────────────────┼────────────────────┼─────┤
-│ PrefillTokenThroughput   │ total   │ 4874.5912 token/s │ 1577.3027 token/s │ 11175.0609 token/s │ 5167.63 token/s │ 5683.8148 token/s │ 10400.2206 token/s │ 11133.1961 token/s │ 100 │
-╘══════════════════════════╧═════════╧═══════════════════╧═══════════════════╧════════════════════╧═════════════════╧═══════════════════╧════════════════════╧════════════════════╧═════╛
+[2026-09-21 07:11:46,841] [ais_bench] [INFO] Request timeline and concurrency chart saved to /workspace/benchmark/outputs/default/20260921_071035/performances/gsm8k-prefix-cache-01_20260921_071009-vllm/gsm8k-prefix-cache-01_20260921_071009_plot.html
+[2026-09-21 07:11:46,841] [ais_bench] [INFO] The gsm8k-prefix-cache-01_20260921_071009_plot has been saved in /workspace/benchmark/outputs/default/20260921_071035/performances/gsm8k-prefix-cache-01_20260921_071009-vllm/gsm8k-prefix-cache-01_20260921_071009_plot.html
+[2026-09-21 07:11:46,850] [ais_bench] [INFO] Converting performance results for stage...
+[2026-09-21 07:11:46,850] [ais_bench] [INFO] Performance results conversion completed!
+[2026-09-21 07:11:46,850] [ais_bench] [INFO] Starting metrics calculation...
+[2026-09-21 07:11:46,856] [ais_bench] [INFO] Starting common metrics calculation...
+[2026-09-21 07:11:46,856] [ais_bench] [INFO] Adding units to metrics...
+[2026-09-21 07:11:46,856] [ais_bench] [INFO] Performance data calculation completed!
+[2026-09-21 07:11:46,857] [ais_bench] [INFO] Performance Results of task [gsm8k-prefix-cache-01_20260921_071009-vllm/gsm8k-prefix-cache-01_20260921_071009]: 
+╒══════════════════════════╤═════════╤══════════════════╤════════════════╤═══════════════════╤══════════════════╤═══════════════════╤═══════════════════╤═══════════════════╤═════╕
+│ Performance Parameters   │ Stage   │ Average          │ Min            │ Max               │ Median           │ P75               │ P90               │ P99               │  N  │
+╞══════════════════════════╪═════════╪══════════════════╪════════════════╪═══════════════════╪══════════════════╪═══════════════════╪═══════════════════╪═══════════════════╪═════╡
+│ E2EL                     │ total   │ 2952.1 ms        │ 1511.9 ms      │ 7539.6 ms         │ 2907.4 ms        │ 2921.0 ms         │ 3494.2 ms         │ 7135.1 ms         │ 10  │
+├──────────────────────────┼─────────┼──────────────────┼────────────────┼───────────────────┼──────────────────┼───────────────────┼───────────────────┼───────────────────┼─────┤
+│ TTFT                     │ total   │ 1679.3 ms        │ 566.0 ms       │ 6551.5 ms         │ 1438.1 ms        │ 1455.1 ms         │ 2012.6 ms         │ 6097.6 ms         │ 10  │
+├──────────────────────────┼─────────┼──────────────────┼────────────────┼───────────────────┼──────────────────┼───────────────────┼───────────────────┼───────────────────┼─────┤
+│ TPOT                     │ total   │ 41.1 ms          │ 30.5 ms        │ 49.6 ms           │ 46.8 ms          │ 47.3 ms           │ 47.7 ms           │ 49.4 ms           │ 10  │
+├──────────────────────────┼─────────┼──────────────────┼────────────────┼───────────────────┼──────────────────┼───────────────────┼───────────────────┼───────────────────┼─────┤
+│ ITL                      │ total   │ 39.8 ms          │ 0.0 ms         │ 80.1 ms           │ 45.8 ms          │ 47.1 ms           │ 48.4 ms           │ 60.1 ms           │ 10  │
+├──────────────────────────┼─────────┼──────────────────┼────────────────┼───────────────────┼──────────────────┼───────────────────┼───────────────────┼───────────────────┼─────┤
+│ InputTokens              │ total   │ 1024.0           │ 1024.0         │ 1024.0            │ 1024.0           │ 1024.0            │ 1024.0            │ 1024.0            │ 10  │
+├──────────────────────────┼─────────┼──────────────────┼────────────────┼───────────────────┼──────────────────┼───────────────────┼───────────────────┼───────────────────┼─────┤
+│ OutputTokens             │ total   │ 32.0             │ 32.0           │ 32.0              │ 32.0             │ 32.0              │ 32.0              │ 32.0              │ 10  │
+├──────────────────────────┼─────────┼──────────────────┼────────────────┼───────────────────┼──────────────────┼───────────────────┼───────────────────┼───────────────────┼─────┤
+│ OutputTokenThroughput    │ total   │ 13.2773 token/s  │ 4.2443 token/s │ 21.1657 token/s   │ 11.0066 token/s  │ 17.8439 token/s   │ 21.0192 token/s   │ 21.151 token/s    │ 10  │
+├──────────────────────────┼─────────┼──────────────────┼────────────────┼───────────────────┼──────────────────┼───────────────────┼───────────────────┼───────────────────┼─────┤
+│ PrefillTokenThroughput   │ total   │ 977.5839 token/s │ 156.3 token/s  │ 1809.1208 token/s │ 712.0396 token/s │ 1461.5771 token/s │ 1779.6686 token/s │ 1806.1755 token/s │ 10  │
+╘══════════════════════════╧═════════╧══════════════════╧════════════════╧═══════════════════╧══════════════════╧═══════════════════╧═══════════════════╧═══════════════════╧═════╛
 ╒═════════════════════════╤═════════╤══════════════════╕
 │ Common Metric           │ Stage   │ Value            │
 ╞═════════════════════════╪═════════╪══════════════════╡
-│ Benchmark Duration      │ total   │ 125287.6482 ms   │
+│ Benchmark Duration      │ total   │ 29530.6913 ms    │
 ├─────────────────────────┼─────────┼──────────────────┤
-│ Total Requests          │ total   │ 100              │
+│ Total Requests          │ total   │ 10               │
 ├─────────────────────────┼─────────┼──────────────────┤
 │ Failed Requests         │ total   │ 0                │
 ├─────────────────────────┼─────────┼──────────────────┤
-│ Success Requests        │ total   │ 100              │
+│ Success Requests        │ total   │ 10               │
 ├─────────────────────────┼─────────┼──────────────────┤
-│ Concurrency             │ total   │ 0.9986           │
+│ Concurrency             │ total   │ 0.9997           │
 ├─────────────────────────┼─────────┼──────────────────┤
 │ Max Concurrency         │ total   │ 1                │
 ├─────────────────────────┼─────────┼──────────────────┤
-│ Request Throughput      │ total   │ 0.7982 req/s     │
+│ Request Throughput      │ total   │ 0.3386 req/s     │
 ├─────────────────────────┼─────────┼──────────────────┤
-│ Total Input Tokens      │ total   │ 102746           │
+│ Total Input Tokens      │ total   │ 10240            │
 ├─────────────────────────┼─────────┼──────────────────┤
-│ Total Generated Tokens  │ total   │ 3200             │
+│ Total Generated Tokens  │ total   │ 320              │
 ├─────────────────────────┼─────────┼──────────────────┤
-│ Input Token Throughput  │ total   │ 820.0808 token/s │
+│ Input Token Throughput  │ total   │ 346.7579 token/s │
 ├─────────────────────────┼─────────┼──────────────────┤
-│ Output Token Throughput │ total   │ 25.5412 token/s  │
+│ Output Token Throughput │ total   │ 10.8362 token/s  │
 ├─────────────────────────┼─────────┼──────────────────┤
-│ Total Token Throughput  │ total   │ 845.6221 token/s │
+│ Total Token Throughput  │ total   │ 357.5941 token/s │
 ╘═════════════════════════╧═════════╧══════════════════╛
-[2026-09-21 03:43:29,915] [ais_bench] [INFO] Performance Result files located in /workspace/benchmark/outputs/default/20260921_034013/performances/gsm8k-prefix-cache-01_20260921_033452-vllm.
-{
-  "actual": {
-    "by_dp": {
-      "0": {
-        "queries": 102746,
-        "hits": 51200,
-        "hit_rate": 0.4983162361551788,
-        "kv_cache_usage": 0.0,
-        "kv_cache_usage_peak": 0.004682622268470382,
-        "kv_cache_usage_avg": 0.00196016746122016
-      }
-    },
-    "global_queries": 102746,
-    "global_hits": 51200,
-    "global_hit_rate": 0.4983162361551788,
-    "global_kv_cache_usage_peak": 0.004682622268470382,
-    "global_kv_cache_usage_avg": 0.00196016746122016
-  },
-  "effective_target_hit_rate": 0.5,
-  "requested_target_hit_rate": 0.5,
-  "target_absolute_difference_pp": 0.0,
-  "target_difference_pp": 0.0,
-  "target_signed_difference_pp": 0.0,
-  "theoretical_hit_rate": 0.5,
-  "theory": {
-    "dp": {},
-    "groups": {
-      "group-0": {
-        "hit_rate": 0.5,
-        "hit_tokens": 51200,
-        "input_tokens": 102400
-      }
-    },
-    "hit_tokens": 51200,
-    "input_tokens": 102400
-  },
-  "theory_actual_absolute_difference_pp": 0.16837638448212178,
-  "theory_actual_difference_pp": 0.16837638448212178,
-  "theory_actual_signed_difference_pp": -0.16837638448212178,
-  "validation": {
-    "affects_exit_code": false,
-    "status": "PASS",
-    "target_reachable": true,
-    "warning_only": true,
-    "actual_status": "PASS"
-  },
-  "warnings": [],
-  "analysis": "/workspace/benchmark/outputs/gsm8k-prefix-cache-01_20260921_033452/result/gsm8k-prefix-cache-01_20260921_033452.analysis.json"
-}
+[2026-09-21 07:11:46,866] [ais_bench] [INFO] Performance Result files located in /workspace/benchmark/outputs/default/20260921_071035/performances/gsm8k-prefix-cache-01_20260921_071009-vllm.
+╒══════════════════════════════╤════════════╕
+│ Prefix Cache Metric          │ Value      │
+╞══════════════════════════════╪════════════╡
+│ Overall Target Hit Rate      │ 50.0000%   │
+├──────────────────────────────┼────────────┤
+│ Overall Theoretical Hit Rate │ 50.0000%   │
+├──────────────────────────────┼────────────┤
+│ Overall Actual Hit Rate      │ 0.0000%    │
+├──────────────────────────────┼────────────┤
+│ Theory vs Actual Difference  │ 50.0000 pp │
+├──────────────────────────────┼────────────┤
+│ Theory vs Target Difference  │ 0.0000 pp  │
+╘══════════════════════════════╧════════════╛
+[INFO] Detailed analysis is available at: /workspace/benchmark/outputs/gsm8k-prefix-cache-01_20260921_071009/result/gsm8k-prefix-cache-01_20260921_071009.analysis.json
