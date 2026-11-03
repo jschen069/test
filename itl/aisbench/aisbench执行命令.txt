@@ -1,0 +1,11 @@
+ais_bench \
+    --models vllm_api_general_stream \
+    --datasets gsm8k_gen_0_shot_cot_str_perf \
+    --mode perf \
+    --num-prompts 32 --num-warmups 0 --batch-size 8 \
+    --host-port 8007 \
+    --path /home/weights/Qwen3-8B \
+    --model-name qwen3-8b \
+    --max-out-len 1024 \
+    --generation-kwargs "{\"temperature\":0.01,\"ignore_eos\":true}" \
+    --work-dir /workspace/itl_diag/sse_logs/stream4_aisbench_result

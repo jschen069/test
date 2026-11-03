@@ -1,0 +1,10 @@
+vllm bench serve \
+    --backend openai --host 127.0.0.1 --port 8006 \
+    --endpoint /v1/completions \
+    --model qwen3-8b --tokenizer /home/weights/Qwen3-8B \
+    --dataset-name custom \
+    --dataset-path /workspace/itl_diag/gsm8k_prompts_custom.jsonl \
+    --num-prompts 32 --max-concurrency 8 \
+    --custom-output-len 1024 --ignore-eos --disable-shuffle \
+    --result-dir /workspace/itl_diag/sse_logs/stream4_vllm_result \
+    --result-filename sse_vllm_qwen3_8b_32x8_stream4.json
